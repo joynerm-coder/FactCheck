@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Everyone's Biography — Fact Check</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=JetBrains+Mono:wght@400&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Crimson Pro', Georgia, serif;
+            background: #1c1c1c;
+            color: #222;
+            line-height: 1.7;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Document side */
+        .document {
+            flex: 1;
+            background: #f4f1ea;
+            padding: 2.5rem 3rem;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+        
+        .document-inner {
+            max-width: 650px;
+            margin: 0 auto;
+        }
+        
+        .doc-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #8b0000;
+        }
+        
+        .doc-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #8b0000;
+        }
+        
+        .doc-subtitle {
+            font-size: 1.1rem;
+            color: #555;
+            font-style: italic;
+        }
+        
+        .doc-source {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 0.4rem;
+        }
+        
+        .instruction {
+            background: #fff3cd;
+            border: 1px solid #ddc36a;
+            padding: 0.5rem 0.8rem;
+            font-size: 0.8rem;
+            color: #856404;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .section {
+            margin-bottom: 1.2rem;
+        }
+        
+        .section-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #8b0000;
+            margin-bottom: 0.3rem;
+        }
+        
+        .section p {
+            font-size: 0.92rem;
+            text-align: justify;
+            margin-bottom: 0.4rem;
+        }
+
+        .footnote {
+            font-size: 0.75rem;
+            font-style: italic;
+            color: #666;
+            margin-top: 0.3rem;
+        }
+        
+        /* Error highlighting */
+        .error {
+            background: linear-gradient(180deg, transparent 50%, rgba(255,100,100,0.4) 50%);
+            border-bottom: 2px solid #c44;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        
+        .error:hover {
+            background: rgba(255,100,100,0.35);
+        }
+        
+        .error.active {
+            background: rgba(255,80,80,0.5);
+            border-bottom-width: 3px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 0;
+            min-width: 0;
+            background: #222;
+            color: #ddd;
+            padding: 0;
+            overflow: hidden;
+            max-height: 100vh;
+            transition: width 0.3s ease, padding 0.3s ease;
+        }
+        
+        .sidebar.open {
+            width: 420px;
+            padding: 2rem 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #666;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #444;
+        }
+        
+        .sidebar-content {
+            display: none;
+        }
+        
+        .sidebar-content.visible {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .error-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+        
+        .label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+        }
+        
+        .label.claim { color: #e66; }
+        .label.fact { color: #5b9; }
+        
+        .claim-box {
+            background: #2d2020;
+            border-left: 3px solid #c44;
+            padding: 0.8rem 1rem;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            border-radius: 0 4px 4px 0;
+            line-height: 1.5;
+        }
+        
+        .correction-box {
+            background: #1a2a22;
+            border-left: 3px solid #4a9;
+            padding: 0.8rem 1rem;
+            font-size: 0.85rem;
+            margin-bottom: 0.6rem;
+            border-radius: 0 4px 4px 0;
+            line-height: 1.5;
+        }
+        
+        .correction-box blockquote {
+            font-style: italic;
+            color: #acd;
+            margin-bottom: 0.4rem;
+        }
+        
+        .source {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: #888;
+        }
+        
+        .source a {
+            color: #6ba;
+            text-decoration: none;
+        }
+        
+        .source a:hover {
+            text-decoration: underline;
+        }
+        
+        .note {
+            background: #2a2a2a;
+            padding: 0.7rem 0.9rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 0.8rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 950px) {
+            body { flex-direction: column; }
+            .document { max-height: none; }
+            .sidebar { width: 100% !important; max-height: none; }
+            .sidebar.open { width: 100% !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="document">
+    <div class="document-inner">
+    <div class="doc-header">
+        <div class="doc-title">Everyone's Biography</div>
+        <div class="doc-subtitle">The First Nine Months</div>
+        <div class="doc-source">Human Life Alliance | Advertising Supplement</div>
+    </div>
+    
+    <div class="instruction">🔍 Highlighted text contains factual errors — click to see corrections</div>
+    
+    <div class="section">
+        <div class="section-title">Day 1: Fertilization</div>
+        <p>The sperm joins with the egg to form one cell. This single cell contains the complex genetic makeup for every detail of a new human being—the child's sex, hair and eye color, height, skin tone, etc. <span class="error" data-id="1">After fertilization, nothing new is added but oxygen, nutrition, and time.</span><sup>1</sup></p>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">1st Month (1-4 Weeks)</div>
+        <p>The first cell divides in two and cell division continues as the newly formed individual travels down the fallopian tube to the uterus. <span class="error" data-id="2">More than 500 cells are present when this tiny embryo (the blastocyst*) reaches the uterus 7 to 10 days after fertilization.</span><sup>2</sup> Foundations of the brain, spinal cord, and nervous system are already established and by day 21 the heart begins to beat in a regular fashion with a blood type often different from the mother's.<sup>3</sup> Muscles are forming and arms, legs, eyes, and ears have begun to show.</p>
+        <p class="footnote">*The blastocyst is the stage at which many researchers want to destroy the embryo in order to harvest stem cells, which are the building blocks of life.</p>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">2nd Month (5-8 Weeks)</div>
+        <p>By six weeks, brain waves can be detected by electroencephalogram and the brain is controlling 40 sets of muscles as well as the organs.<sup>4</sup> The jaw forms, including teeth and taste buds.<sup>5</sup> The baby begins to swallow amniotic fluid and some have been observed hiccupping.<sup>6</sup> During this time, the stomach produces digestive juices and the kidneys begin to function.<sup>7</sup> Fingers and toes are developing and at seven weeks the chest and abdomen are fully formed.<sup>8</sup> Swimming with a natural swimmer's stroke in the amniotic fluid, she now looks like a miniature human infant.<sup>9, 10</sup></p>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">3rd Month (9-12 Weeks)</div>
+        <p>Unique fingerprints are evident and never change.<sup>11</sup> The baby now sleeps, awakens, and exercises her muscles by turning her head, curling her toes, and opening and closing her mouth. Even though mom cannot feel movement yet, the baby is very active. She breathes amniotic fluid to help develop her respiratory system. The gender can be visually determined and family resemblances may appear as well.<sup>12</sup> <span class="error" data-id="3">By the end of the month all the organs and systems of her body are functioning.</span><sup>13</sup></p>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">4th Month (13-16 Weeks)</div>
+        <p><span class="error" data-id="4">By the end of the fourth month, the baby is 8-10 inches in length and weighs about one-half pound.</span> Her ears are functioning and she hears her mother's heartbeat, as well as external noises like music. Mom begins to feel baby's movement—a slight flutter at first that will become stronger.<sup>14</sup> Lifesaving surgery has been performed on babies at this age.</p>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">5th Month (17-20 Weeks)</div>
+        <p>If a sound is especially loud, the baby may jump in reaction to it. Thumb-sucking has been observed during the fifth month.<sup>15</sup> <span class="error" data-id="5">Babies born prematurely at this stage of development often survive, thanks to advances in neonatal medicine.</span><sup>16</sup></p>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">6th Month (21-24 Weeks)</div>
+        <p>Oil and sweat glands are functioning. The baby's delicate skin is protected in the amniotic sac by a special ointment called vernix. She grows rapidly in size and strength while her lungs become more developed.<sup>17</sup></p>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">7th Month (25-28 Weeks)</div>
+        <p>The baby can now recognize her mother's voice. She exercises by stretching and kicking as she grows even bigger. She uses the senses of hearing, touch, and taste, and she can even look around with open eyes at her watery home.<sup>18</sup> If the baby is a boy, his testicles descend from the abdomen into the scrotum.<sup>19</sup></p>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">8th Month (29-32 Weeks)</div>
+        <p>The skin begins to thicken, with a layer of fat stored underneath for insulation and nourishment. <span class="error" data-id="6">The baby swallows a gallon of amniotic fluid per day</span> and often hiccups.<sup>20</sup> Though movement is limited, due to cramped quarters, the baby's kicks are stronger and mom may be able to feel an elbow or heel against her abdomen.<sup>21</sup></p>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">9th Month (33-36 Weeks)</div>
+        <p>Gaining one half pound per week, the baby is getting ready for birth. The bones in her head are soft and flexible to more easily mold for the journey down the birth canal.<sup>22</sup> <span class="error" data-id="7">Of the 45 generations of cell divisions before adulthood, 41 have already taken place. Only four more come before adolescence.</span> <span class="error" data-id="8">Ninety percent of a person's development happens in the womb.</span><sup>23</sup></p>
+    </div>
+    </div>
+</div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">Fact Check Panel</div>
+    
+    <!-- Error 1: Nothing new added -->
+    <div class="sidebar-content" data-id="1">
+        <div class="error-title">"Nothing New Added"</div>
+        
+        <div class="label claim">Document claims</div>
+        <div class="claim-box">"After fertilization, nothing new is added but oxygen, nutrition, and time."</div>
+        
+        <div class="label fact">Why this is misleading</div>
+        <div class="correction-box">
+            <blockquote>Many traits (height, health outcomes, cognitive development) are shaped by environment, epigenetics, maternal factors, and random developmental variation—not just the genetic code present at fertilization.</blockquote>
+        </div>
+        
+        <div class="note">This is rhetorical framing, not a scientific statement. Development involves complex gene-environment interactions throughout pregnancy and beyond.</div>
+    </div>
+    
+    <!-- Error 2: 500 cells / 7-10 days -->
+    <div class="sidebar-content" data-id="2">
+        <div class="error-title">Blastocyst Timing & Cell Count</div>
+        
+        <div class="label claim">Document claims</div>
+        <div class="claim-box">"More than 500 cells are present when this tiny embryo (the blastocyst*) reaches the uterus 7 to 10 days after fertilization."</div>
+        
+        <div class="label fact">Actual fact</div>
+        <div class="correction-box">
+            <blockquote>"The zygote enters the uterus within 3 to 5 days."</blockquote>
+            <div class="source">— MSD Manuals, <a href="https://www.msdmanuals.com/home/women-s-health-issues/normal-pregnancy/stages-of-fetal-development" target="_blank">Stages of Fetal Development</a></div>
+        </div>
+        <div class="correction-box">
+            <blockquote>"Newly expanded normally fertilized blastocysts on day 5 had a total of 58.3 ± 8.1 cells, which increased to 84.4 ± 5.7 and 125.5 ± 19 on days 6 and 7, respectively."</blockquote>
+            <div class="source">— PubMed, <a href="https://pubmed.ncbi.nlm.nih.gov/2612378/" target="_blank">PMID 2612378</a></div>
+        </div>
+        
+        <div class="note">The embryo enters the uterus at 3–5 days with ~60–125 cells—not 7–10 days with 500+ cells.</div>
+    </div>
+    
+    <!-- Error 3: Organs functioning -->
+    <div class="sidebar-content" data-id="3">
+        <div class="error-title">Organs "Functioning" at 12 Weeks</div>
+        
+        <div class="label claim">Document claims</div>
+        <div class="claim-box">"By the end of the month all the organs and systems of her body are functioning."</div>
+        
+        <div class="label fact">Actual fact</div>
+        <div class="correction-box">
+            <blockquote>"Almost all organs are completely formed by about 12 weeks of pregnancy. The brain and spinal cord are exceptions—they continue to form and develop throughout pregnancy."</blockquote>
+            <div class="source">— MSD Manuals, <a href="https://www.msdmanuals.com/home/women-s-health-issues/normal-pregnancy/stages-of-fetal-development" target="_blank">Stages of Fetal Development</a></div>
+        </div>
+        
+        <div class="note">Organs are formed but not functionally mature. Lungs cannot support breathing until ~24+ weeks. "Formed" ≠ "functioning."</div>
+    </div>
+    
+    <!-- Error 4: 8-10 inches -->
+    <div class="sidebar-content" data-id="4">
+        <div class="error-title">Fetal Size at 4 Months</div>
+        
+        <div class="label claim">Document claims</div>
+        <div class="claim-box">"By the end of the fourth month, the baby is 8-10 inches in length and weighs about one-half pound."</div>
+        
+        <div class="label fact">Actual fact</div>
+        <div class="correction-box">
+            <blockquote>"Your baby, or foetus, is around 11.6cm long from head to bottom, which is the size of an avocado."</blockquote>
+            <div class="source">— NHS, <a href="https://www.nhs.uk/pregnancy/week-by-week/13-to-27/16-weeks/" target="_blank">16 weeks pregnant</a></div>
+        </div>
+        
+        <div class="note">11.6 cm ≈ 4.6 inches (crown-rump length). The claimed 8–10 inches corresponds to ~20 weeks, not 16 weeks (end of 4th month).</div>
+    </div>
+    
+    <!-- Error 5: Survival 17-20 weeks -->
+    <div class="sidebar-content" data-id="5">
+        <div class="error-title">Viability at 17–20 Weeks</div>
+        
+        <div class="label claim">Document claims</div>
+        <div class="claim-box">"Babies born prematurely at this stage of development often survive, thanks to advances in neonatal medicine."</div>
+        
+        <div class="label fact">Actual fact</div>
+        <div class="correction-box">
+            <blockquote>"Survival ranged from 24.9% at 22 weeks to 82.1% at 25 weeks."</blockquote>
+            <div class="source">— Pediatrics (AAP), <a href="https://pubmed.ncbi.nlm.nih.gov/39323403/" target="_blank">2024 Study</a></div>
+        </div>
+        <div class="correction-box">
+            <blockquote>"Medical viability is generally considered to be between 23 and 24 weeks gestational age."</blockquote>
+            <div class="source">— <a href="https://en.wikipedia.org/wiki/Fetal_viability" target="_blank">Wikipedia: Fetal viability</a></div>
+        </div>
+        
+        <div class="note">Survival at 17–20 weeks is essentially zero. Even at 22 weeks, survival is only ~25% with intensive care. The viability threshold is 22–24 weeks.</div>
+    </div>
+    
+    <!-- Error 6: Gallon of fluid -->
+    <div class="sidebar-content" data-id="6">
+        <div class="error-title">Amniotic Fluid Volume</div>
+        
+        <div class="label claim">Document claims</div>
+        <div class="claim-box">"The baby swallows a gallon of amniotic fluid per day"</div>
+        
+        <div class="label fact">Actual fact</div>
+        <div class="correction-box">
+            <blockquote>"The fetus swallows, on average, 210–760 ml per day."</blockquote>
+            <div class="source">— GLOWM, <a href="https://www.glowm.com/article/heading/vol-18--ultrasound-in-obstetrics--amniotic-fluid-volume-in-fetal-health-and-disease/id/419193" target="_blank">Amniotic Fluid Volume</a></div>
+        </div>
+        
+        <div class="note">1 gallon = 3,785 mL. Actual amount (210–760 mL) is roughly 5–20% of a gallon. The claim exaggerates by 5–18×.</div>
+    </div>
+    
+    <!-- Error 7: 45 generations -->
+    <div class="sidebar-content" data-id="7">
+        <div class="error-title">Cell Division "Generations"</div>
+        
+        <div class="label claim">Document claims</div>
+        <div class="claim-box">"Of the 45 generations of cell divisions before adulthood, 41 have already taken place. Only four more come before adolescence."</div>
+        
+        <div class="label fact">Actual fact</div>
+        <div class="correction-box">
+            <blockquote>Human development does not follow a fixed number of cell division "generations." Different cell lineages divide at different rates, with ongoing division throughout life for growth and tissue maintenance.</blockquote>
+            <div class="source">— UNSW Embryology, <a href="https://embryology.med.unsw.edu.au/embryology/index.php/Cell_Division_-_Mitosis" target="_blank">Cell Division - Mitosis</a></div>
+        </div>
+        
+        <div class="note">This framing fundamentally misrepresents how human cellular development works. Cell division continues massively after birth.</div>
+    </div>
+    
+    <!-- Error 8: 90% development -->
+    <div class="sidebar-content" data-id="8">
+        <div class="error-title">"90% Development" Claim</div>
+        
+        <div class="label claim">Document claims</div>
+        <div class="claim-box">"Ninety percent of a person's development happens in the womb."</div>
+        
+        <div class="label fact">Actual fact</div>
+        <div class="correction-box">
+            <blockquote>"The brain grows to 80% of adult size by age 3 and 90% by age 5."</blockquote>
+            <div class="source">— First Things First, <a href="https://www.firstthingsfirst.org/early-childhood-matters/brain-development/" target="_blank">Brain Development</a></div>
+        </div>
+        
+        <div class="note">Major brain development continues intensively after birth. The claim that 90% of development is prenatal is not supported by developmental science.</div>
+    </div>
+</div>
+
+<script>
+    const errors = document.querySelectorAll('.error');
+    const contents = document.querySelectorAll('.sidebar-content');
+    const sidebar = document.getElementById('sidebar');
+    
+    errors.forEach(error => {
+        error.addEventListener('click', () => {
+            errors.forEach(e => e.classList.remove('active'));
+            error.classList.add('active');
+            
+            contents.forEach(c => c.classList.remove('visible'));
+            sidebar.classList.add('open');
+            
+            const id = error.getAttribute('data-id');
+            const content = document.querySelector(`.sidebar-content[data-id="${id}"]`);
+            if (content) content.classList.add('visible');
+        });
+    });
+</script>
+
+</body>
+</html>
